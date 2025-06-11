@@ -1,0 +1,48 @@
+<?php
+// include("header.php");
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "eduquest";
+
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+$result = $conn->query("SELECT * FROM purchases WHERE status = 'pending'");
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $purchase_id = (int)$_POST['purchase_id'];
+
+    // Update status to approved
+    $stmt = $conn->prepare("UPDATE purchases SET status = 'approved' WHERE id = ?");
+    $stmt->bind_param("i", $purchase_id);
+    $stmt->execute();
+
+    header("Location: staff.php");
+    exit();
+}
+?>
+
+
+<h2>Pending Course Requests</h2>
+<table class="table table-bordered">
+    <tr>
+        <th>Name</th><th>Email</th><th>Course ID</th><th>Amount</th><th>Action</th>
+    </tr>
+    <?php while ($row = $result->fetch_assoc()): ?>
+    <tr>
+        <td><?= htmlspecialchars($row['user_name']) ?></td>
+        <td><?= htmlspecialchars($row['user_email']) ?></td>
+        <td><?= $row['course_id'] ?></td>
+        <td>₹<?= $row['amount'] ?></td>
+        <td>
+            <form action="approve_request.php" method="post">
+                <input type="hidden" name="purchase_id" value="<?= $row['id'] ?>">
+                <button class="btn btn-success btn-sm" type="submit">Approve</button>
+            </form>
+        </td>
+    </tr>
+    <?php endwhile; ?>
+</table>

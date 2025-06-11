@@ -1,0 +1,273 @@
+\\\\\\\\\\\\\\\\\\\\
+COURSE DETAILS TABLE
+////////////////////
+
+
+
+
+CREATE TABLE courses (
+    course_id INT AUTO_INCREMENT PRIMARY KEY,      -- Course ID (Primary Key)
+    course_name VARCHAR(255) UNIQUE NOT NULL,       -- Course Name (Unique)
+    sub_name VARCHAR(255),                         -- Sub Name or Category
+    price DECIMAL(10, 2),                          -- Course Price
+    discounted_price DECIMAL(10, 2),               -- Discounted Price (optional)
+    discount_percentage INT DEFAULT 0,             -- Discount Percentage
+    image VARCHAR(255),                            -- Image Path or URL
+    short_notes TEXT,                              -- Short notes or overview of the course
+    description TEXT,                              -- Full course description
+    requirements TEXT                              -- Requirements for the course (newline-separated)
+);
+
+
+
+
+
+
+
+
+CREATE TABLE tags (
+    tag_id INT AUTO_INCREMENT PRIMARY KEY,         -- Tag ID (Primary Key)
+    tag_name VARCHAR(100) NOT NULL UNIQUE           -- Tag Name (Unique)
+);
+
+
+
+
+
+
+CREATE TABLE course_tags (
+    course_id INT,                                 -- Course ID (Foreign Key)
+    tag_id INT,                                    -- Tag ID (Foreign Key)
+    PRIMARY KEY (course_id, tag_id),               -- Composite Primary Key
+    FOREIGN KEY (course_id) REFERENCES courses(course_id), -- Foreign Key to Courses Table
+    FOREIGN KEY (tag_id) REFERENCES tags(tag_id)   -- Foreign Key to Tags Table
+);
+
+
+
+
+
+
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+COURSE STUDY METEIREALS TABLE
+/////////////////////////////
+
+CREATE TABLE course_sections (
+    section_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT,
+    section_title VARCHAR(255) NOT NULL,
+    section_description TEXT,
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE videos (
+    video_id INT AUTO_INCREMENT PRIMARY KEY,
+    section_id INT,
+    uploaded_by INT,
+    video_title VARCHAR(255) NOT NULL,
+    video_description TEXT,
+    video_url VARCHAR(255),  -- Link or file path to the video
+    video_duration VARCHAR(20), -- Optional, like "12:30" (12 mins 30 sec)
+    FOREIGN KEY (section_id) REFERENCES course_sections(section_id) ON DELETE CASCADE
+FOREIGN KEY (uploaded_by) REFERENCES teachers(teacher_id) ON DELETE SET NULL;
+
+);
+
+
+
+CREATE TABLE notes (
+    note_id INT AUTO_INCREMENT PRIMARY KEY,
+    video_id INT,
+    note_title VARCHAR(255),
+    note_file VARCHAR(255), -- path to the uploaded PDF
+    FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE
+);
+
+CREATE TABLE assignments (
+    assignment_id INT AUTO_INCREMENT PRIMARY KEY,
+    section_id INT,
+    assignment_title VARCHAR(255),
+    assignment_description TEXT,
+    helping_material VARCHAR(255), -- PDF, DOCX, etc. to support the assignment
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (section_id) REFERENCES course_sections(section_id) ON DELETE CASCADE
+);
+
+
+
+CREATE TABLE admin (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    otp VARCHAR(10),
+    otp_expiry DATETIME
+);
+
+
+
+
+CREATE TABLE teachers (
+    teacher_id INT AUTO_INCREMENT PRIMARY KEY,       -- Teacher ID (Primary Key)
+    first_name VARCHAR(255) NOT NULL,                 -- Teacher's First Name
+    last_name VARCHAR(255) NOT NULL,                  -- Teacher's Last Name
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,  -- Teacher's Gender
+    dob DATE NOT NULL,                                -- Teacher's Date of Birth
+    email VARCHAR(255) NOT NULL UNIQUE,               -- Teacher's Email (Unique)
+    phone VARCHAR(15),                                -- Teacher's Phone Number
+    department INT,                                   -- Department (Linked to courses table)
+    house_name VARCHAR(255),                          -- Teacher's House Name
+    place VARCHAR(255),                               -- Teacher's Place (City)
+    district VARCHAR(255),                            -- Teacher's District
+    pincode VARCHAR(10),                              -- Teacher's Pincode
+    status TINYINT DEFAULT 1,                         -- Status (1 = active, 0 = dismissed)
+    photo VARCHAR(255),                               -- Teacher's Photo
+    certificate VARCHAR(255),                         -- Teacher's Certificate
+    aadhar_file VARCHAR(255),                         -- Teacher's Aadhar File
+    address TEXT,                                     -- Teacher's Full Address
+    password VARCHAR(255) NOT NULL;
+
+    FOREIGN KEY (department) REFERENCES courses(course_id) -- Foreign Key to courses table
+);
+
+
+
+CREATE TABLE purchases (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_email VARCHAR(255),
+    user_name VARCHAR(255),
+    course_id INT,
+    address TEXT,
+    phone VARCHAR(20),
+    amount FLOAT,
+    status ENUM('pending', 'approved') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+
+CREATE TABLE staff_complaints (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    staff_name VARCHAR(100),
+    staff_email VARCHAR(150),
+    subject VARCHAR(255),
+    message TEXT,
+    recipient VARCHAR(50) NOT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE blog (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    content TEXT,
+    author VARCHAR(100),
+    published_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    main_image VARCHAR(255)
+);
+
+
+
+CREATE TABLE `events` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    
+    -- Main event details
+    `main_heading` VARCHAR(255) NOT NULL,
+    `event_date` DATE NOT NULL,
+    `organized_by` VARCHAR(255) NOT NULL,
+    `description` TEXT,
+
+    -- Main event image
+    `main_event_image` VARCHAR(255),
+
+    -- Sub event images
+    `sub_image1` VARCHAR(255),
+    `sub_image2` VARCHAR(255),
+    `sub_image3` VARCHAR(255),
+
+    -- Guest names
+    `main_guest1` VARCHAR(255),
+    `main_guest2` VARCHAR(255),
+
+    -- Guest images
+    `guest_images1` VARCHAR(255),
+    `guest_images2` VARCHAR(255),
+
+    -- Timestamp
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+CREATE TABLE teacher_complaints (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    teacher_id INT NOT NULL,                            -- From session or teacher table
+    subject VARCHAR(255) NOT NULL,                      -- Complaint subject
+    message TEXT NOT NULL,                              -- Complaint details
+    recipient ENUM('admin', 'subadmin') NOT NULL,       -- Target recipient
+    status ENUM('pending', 'resolved') DEFAULT 'pending',  -- Status of the complaint
+    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,    -- Time of submission
+
+    FOREIGN KEY (teacher_id) REFERENCES teachers(teacher_id)
+);
+
+
+
+
+
+CREATE TABLE questions (
+    question_id INT AUTO_INCREMENT PRIMARY KEY,      -- Unique ID for the question
+    course_id INT,                                   -- Course ID to link the question to a course
+    question_text TEXT,                              -- The actual question text
+    option_a VARCHAR(255),                           -- Option A
+    option_b VARCHAR(255),                           -- Option B
+    option_c VARCHAR(255),                           -- Option C
+    option_d VARCHAR(255),                           -- Option D
+    correct_option ENUM('a', 'b', 'c', 'd'),         -- Correct option (can be 'a', 'b', 'c', or 'd')
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE  -- Foreign key to courses table
+);
+
+
+CREATE TABLE exam_results (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_email VARCHAR(255),
+    course_id INT,
+    level INT,
+    total INT,
+    correct INT,
+    wrong INT,
+    score FLOAT,
+    percentage FLOAT,
+    passed BOOLEAN,
+    taken_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+CREATE TABLE results (
+    result_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_email VARCHAR(255),              -- who took the exam (you can use user_id if you have a users table)
+    course_id INT,                        -- which course
+    level INT,                            -- exam level: 1, 2, or 3
+    total_questions INT,                 
+    correct_answers INT,
+    wrong_answers INT,
+    negative_marks FLOAT DEFAULT 0,
+    final_score FLOAT,                    -- final score (with or without negative)
+    percentage FLOAT,
+    passed BOOLEAN,
+    taken_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE admin_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    recipient_type ENUM('teacher', 'staff') NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'approved') DEFAULT 'pending'
+);
